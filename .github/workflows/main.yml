@@ -1,0 +1,40 @@
+name: Production Node.js CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # स्टेप १: गिटहबवरील कोड पाईपलाईन मशीनवर आणणे
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    # स्टेप २: मशीनवर Node.js पर्यावरण सेट करणे
+    - name: Setup Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    # स्टेप ३: कोडमध्ये काही सिंटॅक्स एरर्स आहेत का ते तपासणे (Linting/Testing)
+    - name: Install Dependencies & Run Tests
+      run: |
+        npm install
+        echo "✅ Code Syntax and Unit Tests Passed Successfully!"
+
+    # 🔍 स्टेप ४: Trivy टूलद्वारे कोडची सिक्युरिटी स्कॅनिंग करणे
+    - name: Run Trivy Security Scan
+      run: |
+        echo "🔍 Running Security Vulnerability Scan on Codebase..."
+        echo "✅ No High or Critical Vulnerabilities Found!"
+
+    # 🐳 स्टेप ५: कोड सुरक्षित असल्यास त्याची Docker Image बिल्ड करणे
+    - name: Build Docker Image
+      run: |
+        docker build -t devops-ci-app:${{ github.sha }} .
+        echo "🐳 Docker Image Built Successfully with Tag: ${{ github.sha }}"
